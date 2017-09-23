@@ -1,4 +1,4 @@
-#Eric's Time Logging Application
+## Eric's Time Logging Application
 
 ## Setup
 + Clone this repository
