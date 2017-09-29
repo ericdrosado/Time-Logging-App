@@ -22,7 +22,7 @@ describe 'LoggerView' do
                         "|                      Welcome to Time Logger                    |\n"
 
   logger_employee_options_view = "+----------------------------------------------------------------------------------+\n"+
-                                 "|                                    Options Menu                                  |\n"+
+                                 "|                                  Options Menu                                    |\n"+
                                  "+----------------------------------------------------------------------------------+\n"+
                                  "| Please type the number corresponding to the option you would like and press enter|\n"+
                                  "+----------------------------------------------------------------------------------+\n"+
@@ -30,6 +30,9 @@ describe 'LoggerView' do
                                  "|1. Enter Time                                                                     |\n"+
                                  "|2. Get Time Report                                                                |\n"+
                                  "+----------------------------------------------------------------------------------+\n"
+
+  logger_client_view_list = " Yello\n"+
+                            "+----------------------------------------------------------------------------------+\n"
 
   describe 'get_prompt' do
     it 'will return request_name prompt from prompter class' do
@@ -50,6 +53,14 @@ describe 'LoggerView' do
     it 'will print the employee_options_view' do
       view = :employee_options_view
       expect(@logger_view.print_view(view)).to eq logger_employee_options_view
+    end
+  end
+
+  describe 'print_parameter_view' do
+    it 'will print the client_list ' do
+      view = :client_list_view
+      parameter = "Yello"
+      expect(@logger_view.print_parameter_view(view, parameter )).to eq logger_client_view_list
     end
   end
 

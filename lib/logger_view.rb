@@ -14,6 +14,11 @@ class LoggerView
     @io_handler.print(view)
   end
 
+  def print_parameter_view view, parameter
+    view = send(view, parameter)
+    @io_handler.print(view)
+  end
+
   def get_input
     @io_handler.get_input
   end
@@ -31,7 +36,7 @@ class LoggerView
 
   def employee_options_view
     "+----------------------------------------------------------------------------------+\n"+
-    "|                                    Options Menu                                  |\n"+
+    "|                                  Options Menu                                    |\n"+
     "+----------------------------------------------------------------------------------+\n"+
     "| Please type the number corresponding to the option you would like and press enter|\n"+
     "+----------------------------------------------------------------------------------+\n"+
@@ -53,6 +58,24 @@ class LoggerView
     "|3. Add Employee                                                                   |\n"+
     "|4. Add Client                                                                     |\n"+
     "|5. Get Employees Time Report                                                      |\n"+
+    "+----------------------------------------------------------------------------------+\n"
+  end
+
+  def time_entry_view
+    "+----------------------------------------------------------------+\n"+
+    "|                           Time Entry                           |\n"
+  end
+
+  def client_view
+    "+----------------------------------------------------------------------------------+\n"+
+    "|                                  Client List                                     |\n"+
+    "+----------------------------------------------------------------------------------+\n"+
+    "| Please type the name of the client you completed Billable Work for:              |\n"+
+    "+----------------------------------------------------------------------------------+\n"
+  end
+
+  def client_list_view parameter
+    " #{parameter}\n"+
     "+----------------------------------------------------------------------------------+\n"
   end
 
