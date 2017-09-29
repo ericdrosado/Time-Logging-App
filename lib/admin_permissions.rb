@@ -1,3 +1,5 @@
+require 'csv'
+
 require_relative './employee_permissions'
 
 class AdminPermissions < EmployeePermissions
