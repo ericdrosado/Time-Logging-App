@@ -34,6 +34,13 @@ describe 'LoggerView' do
   logger_client_view_list = " Yello\n"+
                             "+----------------------------------------------------------------------------------+\n"
 
+  logger_timecode_report_view = "+----------------------------------------------------------------------------------+\n"+
+                                "|                               Timecode Report                                    |\n"+
+                                "+----------------------------------------------------------------------------------+\n"+
+                                "| Below is your timecode report for the current month:                             |\n"+
+                                "+----------------------------------------------------------------------------------+\n"+
+                                "Total Billable Work Hours this month: 20\n"
+
   describe 'get_prompt' do
     it 'will return request_name prompt from prompter class' do
       prompt = :request_name
@@ -60,7 +67,12 @@ describe 'LoggerView' do
     it 'will print the client_list ' do
       view = :client_list_view
       parameter = "Yello"
-      expect(@logger_view.print_parameter_view(view, parameter )).to eq logger_client_view_list
+      expect(@logger_view.print_parameter_view(view, parameter)).to eq logger_client_view_list
+    end
+    it 'will print the timecode_report_view' do
+      view = :timecode_report_view
+      parameter = 'Total Billable Work Hours this month: 20'
+      expect(@logger_view.print_parameter_view(view, parameter)).to eq logger_timecode_report_view
     end
   end
 

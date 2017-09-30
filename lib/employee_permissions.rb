@@ -52,7 +52,77 @@ class EmployeePermissions
     return client_list
   end
 
-  def get_time_report
+  def get_time_report user_name
+    path = create_path(user_name)
+    timecode_report = build_timecode_report(path)
+    client_report = build_client_report(path)
+    detailed_report = build_detailed_report(path)
+    return [[:timecode_report_view, timecode_report],
+            [:client_report_view, client_report],
+            [:detailed_report_view, detailed_report]]
+  end
+
+  def build_timecode_report path
+    billable_work_hours = 0
+    nonbillable_work_hours = 0
+    pto = 0
+    time_log_file = File.expand_path(path, __FILE__)
+    CSV.foreach(time_log_file) do |row|
+      month = get_month_from_data(row)
+      if month === Date.today.month
+        if row[2] == "Billable Work"
+          billable_work_hours += row[1].to_i
+        elsif row[2] == "Non-billable work"
+          nonbillable_work_hours += row[1].to_i
+        else row[2] == "PTO"
+          pto += row[1].to_i
+        end
+      end
+    end
+    return "Total Billable Work Hours this month: #{billable_work_hours}\n"+
+            "Total Non-billable Work Hours this month: #{nonbillable_work_hours}\n"+
+            "Total PTO Hours this month: #{pto}"
+  end
+
+  def build_client_report path
+    client_list = get_client_list
+    client_list_hash = {}
+    client_list.each {|client| client_list_hash[client] = 0}
+    time_log_file = File.expand_path(path, __FILE__)
+    CSV.foreach(time_log_file) do |row|
+      month = get_month_from_data(row)
+      if month === Date.today.month
+        client_list.each do |client|
+          client_list_hash[client] += row[1].to_i if client == row[3]
+        end
+      end
+    end
+    prepare_client_report(client_list_hash)
+  end
+
+  def prepare_client_report client_list_hash
+    client_reports = []
+    client_list_hash.each do |key, value|
+      client_reports << "For #{key} you've worked #{value} hours this month"
+    end
+    client_reports.join("\n")
+  end
+
+  def build_detailed_report path
+    month_of_reports = []
+    time_log_file = File.expand_path(path, __FILE__)
+    CSV.foreach(time_log_file) do |row|
+      month = get_month_from_data(row)
+      if month === Date.today.month
+        month_of_reports << row.join(",")
+      end
+    end
+    month_of_reports.sort_by {|date| date[0]}.join("\n")
+  end
+
+  def get_month_from_data row
+    date = row[0].split('/')
+    month = date[1].to_i
   end
 
 end
