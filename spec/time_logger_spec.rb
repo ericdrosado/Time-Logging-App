@@ -87,6 +87,7 @@ describe 'TimeLogger' do
 
   describe '.get_log_entry' do
     it 'will return a user entry' do
+      allow(@logger_view).to receive(:clear_view)
       allow(@logger_view).to receive(:time_entry_view)
       allow(@logger_view).to receive(:request_time_entry)
       allow(@logger_view).to receive(:get_input).and_return('23/09/2017,8,Billable Work')
@@ -186,6 +187,18 @@ describe 'TimeLogger' do
       expect(@logger_view).to receive(:get_prompt).with(:successful_operation)
       expect(@time_logger).to receive(:send).and_return(:options_view)
       @time_logger.evaluate_entry_status(entry_status, options_view, options)
+    end
+  end
+
+  describe '.get_log_report' do
+    it 'will obtain log report data for LoggerView to display' do
+      report = double()
+      options = "employee_options"
+      allow(@time_logger).to receive(:get_time_report).with("John Doe").and_return(report)
+      allow(@logger_view).to receive(:clear_view)
+      allow(@logger_view).to receive(:print_parameter_view).with(report, report)
+      expect(@time_logger).to receive(:send).and_return(:options_view)
+      @time_logger.evaluate_entry_status(@employee_permissions, :employee_options_view, options)
     end
   end
 

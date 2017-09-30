@@ -46,9 +46,7 @@ class TimeLogger
     when '1'
       enter_time(@employee_permissions, options_view, 'employee_options')
     when '2'
-      report = @employee_permissions.get_time_report
-      #print_report_view
-      employee_options(options_view)
+      get_log_report(@employee_permissions, options_view, 'employee_options')
     else
       invalid_entry(options_view, 'employee_options')
     end
@@ -62,9 +60,7 @@ class TimeLogger
     when '1'
       enter_time(@admin_permissions, options_view, 'admin_options')
     when '2'
-      report = @admin_permissions.get_time_report
-      #print_report_view
-      admin_options(options_view)
+      get_log_report(@admin_permissions, options_view, 'admin_options')
     when '3'
       employee_name = @logger_view.get_input
       @admin_permissions.add_employee(employee_name)
@@ -129,6 +125,14 @@ class TimeLogger
       @logger_view.print_view(options_view)
       send(options, options_view)
     end
+  end
+
+  def get_log_report permissions, options_view, options
+    report = permissions.get_time_report(@user_name)
+    @logger_view.clear_view()
+    @logger_view.print_view(options_view)
+    report.each {|report_type| @logger_view.print_parameter_view(report_type[0], report_type[1])}
+    send(options, options_view)
   end
 
 end
