@@ -3,19 +3,23 @@ require_relative '../lib/validator'
 
 describe 'EmployeePermissions' do
 
-  timecode_report = "Total Billable Work Hours this month: 25\n"+
-                     "Total Non-billable Work Hours this month: 20\n"+
-                     "Total PTO Hours this month: 0"
-  client_report = "For American Medical Association you've worked 17 hours this month\n"+
-                  "For Next College Student Athlete you've worked 0 hours this month\n"+
-                  "For Yello you've worked 8 hours this month"
-  detailed_report = "18/09/2017,9,Billable Work,American Medical Association\n"+
-                    "20/09/2017,10,Non-billable work\n"+
-                    "21/09/2017,8,Billable Work,Yello\n"+
-                    "23/09/2017,10,Non-billable work\n"+
-                    "28/09/2017,8,Billable Work,American Medical Association"
+  mock_path = File.expand_path('../../spec/mocks/mock_employee_log.csv', __FILE__)
+  date = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year}"
+  hours = "9"
+  type_of_work = "Billable Work"
+  client = "American Medical Association"
+  entry = [date,hours,type_of_work,client]
+  CSV.open(mock_path, "wb") do |csv|
+      csv << entry
+  end
 
-  mock_path = '../../spec/mocks/mock_employee_log.csv'
+  timecode_report = "Total Billable Work Hours this month: 9\n"+
+                     "Total Non-billable Work Hours this month: 0\n"+
+                     "Total PTO Hours this month: 0"
+  client_report = "For American Medical Association you've worked 9 hours this month\n"+
+                  "For Next College Student Athlete you've worked 0 hours this month\n"+
+                  "For Yello you've worked 0 hours this month"
+  detailed_report = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year},9,Billable Work,American Medical Association"
 
   before do
     @validator = Validator.new
@@ -78,20 +82,23 @@ describe 'EmployeePermissions' do
       expect(@employee_permissions.enter_time(entry, user_name)).to eq 'invalid'
     end
     it "will return 'invalid' given an invalid PTO entry" do
-      entry = ['25/09/2017','8','pTO']
+      entry = ['25/09/2017','8','PTO']
       allow(@validator).to receive(:validate_time_entry).with(entry, nil).and_return(false)
       expect(@employee_permissions.enter_time(entry, user_name)).to eq 'invalid'
     end
   end
 
   describe '.create_path' do
+
     it 'will return a path to John Doe csv file' do
       user_name = 'John Doe'
-      expect(@employee_permissions.create_path(user_name)).to eq '../../data/john_doe_log.csv'
+      path = File.expand_path("../../data/john_doe_log.csv", __FILE__)
+      expect(@employee_permissions.create_path(user_name)).to eq path
     end
     it 'will return a path to Eric Rosado csv file' do
       user_name = 'Eric Rosado'
-      expect(@employee_permissions.create_path(user_name)).to eq '../../data/eric_rosado_log.csv'
+      path = File.expand_path("../../data/eric_rosado_log.csv", __FILE__)
+      expect(@employee_permissions.create_path(user_name)).to eq path
     end
   end
 
@@ -104,14 +111,22 @@ describe 'EmployeePermissions' do
   describe '#get_time_report' do
     it 'will return an array with views and reports' do
       user_name = 'Spec Doe'
-      path = '../../data/spec_doe_log.csv'
+      path = File.expand_path("../../data/spec_doe_log.csv", __FILE__)
       allow(@employee_permissions).to receive(:create_path).with(user_name).and_return(path)
+      allow(File).to receive(:file?).with(path).and_return(true)
       allow(@employee_permissions).to receive(:build_timecode_report).with(path).and_return(timecode_report)
       allow(@employee_permissions).to receive(:build_client_report).with(path).and_return(client_report)
       allow(@employee_permissions).to receive(:build_detailed_report).with(path).and_return(detailed_report)
       expect(@employee_permissions.get_time_report(user_name)).to eq [[:timecode_report_view, timecode_report],
                                                                       [:client_report_view, client_report],
                                                                       [:detailed_report_view, detailed_report]]
+    end
+    it "will return 'invalid' if log does not exist for user" do
+      user_name = 'Spec Doe'
+      path = File.expand_path("../../data/spec_doe_log.csv", __FILE__)
+      allow(@employee_permissions).to receive(:create_path).with(user_name).and_return(path)
+      allow(File).to receive(:file?).with(path).and_return(false)
+      expect(@employee_permissions.get_time_report(user_name)).to eq 'invalid'
     end
   end
 

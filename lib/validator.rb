@@ -31,4 +31,23 @@ class Validator
     return client_list.include?(entry)
   end
 
+  def valid_new_employee_entry? name, permission, employee_names
+    is_a_valid_name?(name) && is_a_valid_permission?(permission) && not_a_used_name?(name, employee_names)
+  end
+
+  def is_a_valid_name? name
+    !! name.match(/(\A([A-Za-z]+)([\s]{1})([A-Za-z]+)\z)/)
+  end
+
+  def is_a_valid_permission? permission
+    permission == 'admin' || permission == 'employee'
+  end
+
+  def not_a_used_name? name, employee_names
+    employee_names.each do |employee_name|
+      return false if employee_name == name
+    end
+    return true
+  end
+
 end
