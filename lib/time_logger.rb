@@ -62,12 +62,16 @@ class TimeLogger
     when '2'
       get_log_report(@admin_permissions, options_view, 'admin_options')
     when '3'
+      @logger_view.clear_view
+      @logger_view.print_view(:add_employee_view)
       employee_name = @logger_view.get_input
-      @admin_permissions.add_employee(employee_name)
-      admin_options(options_view)
+      @logger_view.get_prompt(:request_permission_type)
+      permission = @logger_view.get_input
+      entry_status = @admin_permissions.add_employee(employee_name, permission)
+      evaluate_entry_status(entry_status, options_view, 'admin_options')
     when '4'
       client_name = @logger_view.get_input
-      @admin_permissions.add_client
+      @admin_permissions.add_client(client_name, permission)
       admin_options(options_view)
     when '5'
       report = @admin_permissions.get_employee_time_report
@@ -115,10 +119,7 @@ class TimeLogger
 
   def evaluate_entry_status entry_status, options_view, options
     if entry_status == 'invalid'
-      @logger_view.clear_view()
-      @logger_view.print_view(options_view)
-      @logger_view.get_prompt(:invalid_entry)
-      send(options, options_view)
+      get_view_for_invalid_entry(:invalid_entry, options_view, options)
     else
       @logger_view.clear_view()
       @logger_view.get_prompt(:successful_operation)
@@ -129,10 +130,20 @@ class TimeLogger
 
   def get_log_report permissions, options_view, options
     report = permissions.get_time_report(@user_name)
-    @logger_view.clear_view()
-    @logger_view.print_view(options_view)
-    report.each {|report_type| @logger_view.print_parameter_view(report_type[0], report_type[1])}
-    send(options, options_view)
+    if report == 'invalid'
+      get_view_for_invalid_entry(:no_log, options_view, options)
+    else
+      @logger_view.clear_view()
+      @logger_view.print_view(options_view)
+      report.each {|report_type| @logger_view.print_parameter_view(report_type[0], report_type[1])}
+      send(options, options_view)
+    end
   end
 
+  def get_view_for_invalid_entry prompt, options_view, options
+    @logger_view.clear_view()
+    @logger_view.get_prompt(prompt)
+    @logger_view.print_view(options_view)
+    send(options, options_view)
+  end
 end

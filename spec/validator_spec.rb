@@ -107,4 +107,71 @@ describe 'Validator' do
       expect(@validator.is_a_client?(entry, client_list)).to eq false
     end
   end
+
+  describe '#valid_new_employee_entry?' do
+    it 'will return true if it is a valid new employee entry' do
+      name = 'John Spec'
+      permission = 'employee'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.valid_new_employee_entry?(name, permission, employee_names)).to eq true
+    end
+    it 'will return false if the name is the same name of another employee' do
+      name = 'John Doe'
+      permission = 'employee'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.valid_new_employee_entry?(name, permission, employee_names)).to eq false
+    end
+    it 'will return false if the permission is not a permission choice' do
+      name = 'John Spec'
+      permission = 'administrator'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.valid_new_employee_entry?(name, permission, employee_names)).to eq false
+    end
+    it 'will return false if the name has characters other than letters' do
+      name = 'John$ Spec'
+      permission = 'administrator'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.valid_new_employee_entry?(name, permission, employee_names)).to eq false
+    end
+  end
+
+  describe '.is_a_valid_name?' do
+    it 'will return true if the name does not have non letter characters in the name' do
+      name = 'John Spec'
+      expect(@validator.is_a_valid_name?(name)).to eq true
+    end
+    it 'will return false if the name has non letter characters in the name' do
+      name = 'J0hn Spec'
+      expect(@validator.is_a_valid_name?(name)).to eq false
+    end
+    it 'will return false if there is no space between the first and last name' do
+      name = 'JohnSpec'
+      expect(@validator.is_a_valid_name?(name)).to eq false
+    end
+  end
+
+  describe '.is_a_valid_permission?' do
+    it 'will return true if the permission is a permission choice' do
+      permission = 'admin'
+      expect(@validator.is_a_valid_permission?(permission)).to eq true
+    end
+    it 'will return false if the permission is not a permission choice' do
+      permission = 'employed'
+      expect(@validator.is_a_valid_permission?(permission)).to eq false
+    end
+  end
+
+  describe '.not_a_used_name?' do
+    it 'will return true if the new employe name is not a name already in use' do
+      name = 'John Rosado'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.not_a_used_name?(name, employee_names)).to eq true
+    end
+    it 'will return false if the new employe name is a name already in use' do
+      name = 'Eric Rosado'
+      employee_names = ['Eric Rosado', 'John Doe']
+      expect(@validator.not_a_used_name?(name, employee_names)).to eq false
+    end
+  end
+
 end

@@ -8,6 +8,14 @@ require_relative '../lib/validator'
 
 describe 'TimeLogger' do
 
+  timecode_report = "Total Billable Work Hours this month: 9\n"+
+                     "Total Non-billable Work Hours this month: 0\n"+
+                     "Total PTO Hours this month: 0"
+  client_report = "For American Medical Association you've worked 9 hours this month\n"+
+                  "For Next College Student Athlete you've worked 0 hours this month\n"+
+                  "For Yello you've worked 0 hours this month"
+  detailed_report = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year},9,Billable Work,American Medical Association"
+
   before do
     @mock_io_handler = MockIOHandler.new
     @prompter = Prompter.new
@@ -72,6 +80,7 @@ describe 'TimeLogger' do
   end
 
   describe '.enter_time' do
+
     let(:permissions) {:permissions}
     let(:options_view) {:options_view}
     let(:options) {:options}
@@ -101,7 +110,6 @@ describe 'TimeLogger' do
       entry = ['23/09/2017', '8', 'Billable Work']
       client_list = ["American Medical Association", "Next College Student Athlete", "Yello"]
       entry_with_client = ['23/09/2017', '8', 'Billable Work', 'Yello']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@time_logger).to receive(:choose_client).with(entry, client_list).and_return(['23/09/2017', '8', 'Billable Work', 'Yello'])
       allow(@employee_permissions).to receive(:enter_time).with(entry_with_client, 'John Doe', client_list).and_return('valid')
@@ -109,35 +117,30 @@ describe 'TimeLogger' do
     end
     it 'will log a time entry into a csv file for Non-billable work' do
       entry = ['24/09/2017', '8', 'Non-billable work']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@employee_permissions).to receive(:enter_time).with(entry, 'John Doe').and_return('valid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'valid'
     end
     it 'will log a time entry into a csv file for PTO' do
       entry = ['25/09/2017', '8', 'PTO']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@employee_permissions).to receive(:enter_time).with(entry, 'John Doe').and_return('valid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'valid'
     end
     it 'will not log an incorrect date entry' do
       entry = ['29/02/2017', '8', 'PTO']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@employee_permissions).to receive(:enter_time).with(entry, 'John Doe').and_return('invalid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'invalid'
     end
     it 'will not log an incorrect hour entry' do
       entry = ['29/02/2017', 'H', 'PTO']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@employee_permissions).to receive(:enter_time).with(entry, 'John Doe').and_return('invalid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'invalid'
     end
     it 'will not log an incorrect timecode entry' do
       entry = ['29/02/2017', '8', 'timecode']
-
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
       allow(@employee_permissions).to receive(:enter_time).with(entry, 'John Doe').and_return('invalid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'invalid'
@@ -148,7 +151,6 @@ describe 'TimeLogger' do
     it 'will let the user choose a client' do
       entry = ['23/09/2017', '8', 'Billable Work']
       client_list = ["American Medical Association", "Next College Student Athlete", "Yello"]
-
       allow(@logger_view).to receive(:get_input).and_return("Yello")
       expect(@time_logger.choose_client(entry, client_list)).to eq ['23/09/2017', '8', 'Billable Work', 'Yello']
     end
@@ -159,7 +161,6 @@ describe 'TimeLogger' do
       entry_status = 'invalid'
       options_view = double()
       options = 'employee_options'
-
       expect(@time_logger).to receive(:evaluate_entry_status).with(entry_status, options_view, options)
       @time_logger.invalid_entry(options_view, options)
     end
@@ -172,16 +173,12 @@ describe 'TimeLogger' do
 
     it 'will prompt invalid_entry and return employee_options view when entry_status is invalid' do
       entry_status = "invalid"
-
-      allow(@logger_view).to receive(:clear_view)
-      allow(@logger_view).to receive(:print_view).with(:options_view)
-      expect(@logger_view).to receive(:get_prompt).with(:invalid_entry)
-      expect(@time_logger).to receive(:send).and_return(:options_view)
+      prompt = :invalid_entry
+      expect(@time_logger).to receive(:get_view_for_invalid_entry).with(prompt, options_view, options)
       @time_logger.evaluate_entry_status(entry_status, options_view, options)
     end
     it 'will prompt successful_operation and return employee_options view when entry_status is valid' do
       entry_status = "valid"
-
       allow(@logger_view).to receive(:clear_view)
       allow(@logger_view).to receive(:print_view).with(:options_view)
       expect(@logger_view).to receive(:get_prompt).with(:successful_operation)
@@ -191,14 +188,40 @@ describe 'TimeLogger' do
   end
 
   describe '.get_log_report' do
+
+    options_view = :options_view
+    options = "employee_options"
+
+    it 'will prompt invalid_entry and return employee_options view when report is invalid' do
+      prompt = :no_log
+      @time_logger.instance_variable_set(:@user_name, 'John Doe')
+      allow(@employee_permissions).to receive(:get_time_report).with("John Doe").and_return('invalid')
+      expect(@time_logger).to receive(:get_view_for_invalid_entry).with(prompt, options_view, options)
+      @time_logger.get_log_report(@employee_permissions, options_view, options)
+    end
     it 'will obtain log report data for LoggerView to display' do
-      report = double()
-      options = "employee_options"
-      allow(@time_logger).to receive(:get_time_report).with("John Doe").and_return(report)
+      @time_logger.instance_variable_set(:@user_name, 'Mock Employee')
+      allow(@employee_permissions).to receive(:get_time_report).with("Mock Employee").and_return('invalid')
       allow(@logger_view).to receive(:clear_view)
-      allow(@logger_view).to receive(:print_parameter_view).with(report, report)
+      allow(@logger_view).to receive(:print_view).with(:options_view)
+      allow(@logger_view).to receive(:print_parameter_view).with(:timecode_report_view, :timecode_report)
+      allow(@logger_view).to receive(:print_parameter_view).with(:client_report_view, :client_report)
+      allow(@logger_view).to receive(:print_parameter_view).with(:detailed_report_view, :detailed_report)
+      expect(@time_logger).to receive(:send).with(options, options_view)
+      @time_logger.get_log_report(@employee_permissions, options_view, options)
+    end
+  end
+
+  describe '.get_view_for_invalid_entry' do
+    it 'will receive the corresponding UI for an invalid entry' do
+      entry_status = "invalid"
+      options_view = :options_view
+      options = "employee_options"
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:get_prompt).with(:invalid_entry)
+      allow(@logger_view).to receive(:print_view).with(:options_view)
       expect(@time_logger).to receive(:send).and_return(:options_view)
-      @time_logger.evaluate_entry_status(@employee_permissions, :employee_options_view, options)
+      @time_logger.evaluate_entry_status(entry_status, options_view, options)
     end
   end
 

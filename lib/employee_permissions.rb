@@ -41,7 +41,7 @@ class EmployeePermissions
   def create_path user_name
     user_name = user_name.split(' ')
     user_name = user_name.join('_').downcase
-    return "../../data/#{user_name}_log.csv"
+    return File.expand_path("../../data/#{user_name}_log.csv", __FILE__)
   end
 
   def get_client_list
@@ -54,20 +54,23 @@ class EmployeePermissions
 
   def get_time_report user_name
     path = create_path(user_name)
-    timecode_report = build_timecode_report(path)
-    client_report = build_client_report(path)
-    detailed_report = build_detailed_report(path)
-    return [[:timecode_report_view, timecode_report],
-            [:client_report_view, client_report],
-            [:detailed_report_view, detailed_report]]
+    if File.file?(path)
+      timecode_report = build_timecode_report(path)
+      client_report = build_client_report(path)
+      detailed_report = build_detailed_report(path)
+      return [[:timecode_report_view, timecode_report],
+              [:client_report_view, client_report],
+              [:detailed_report_view, detailed_report]]
+    else
+      return "invalid"
+    end
   end
 
   def build_timecode_report path
     billable_work_hours = 0
     nonbillable_work_hours = 0
     pto = 0
-    time_log_file = File.expand_path(path, __FILE__)
-    CSV.foreach(time_log_file) do |row|
+    CSV.foreach(path) do |row|
       month = get_month_from_data(row)
       if month === Date.today.month
         if row[2] == "Billable Work"

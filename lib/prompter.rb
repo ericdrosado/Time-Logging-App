@@ -30,8 +30,8 @@ class Prompter
   end
 
   def invalid_entry
-    "|I'm sorry, that is an invalid entry. Ensure that your entry is typed exactly as it|\n"+
-    "|appears. Please choose an option from the menu and try again.                     |\n"+
+    "|I'm sorry, that is an invalid entry. Ensure that your entry is typed correctly or |\n"+
+    "|exactly as it appears. Please choose an option from the menu and try again.       |\n"+
     "+----------------------------------------------------------------------------------+\n"
   end
 
@@ -39,6 +39,20 @@ class Prompter
     "+----------------------------------------------------------------+\n"+
     "|The operation has been completed successfully                   |\n"+
     "+----------------------------------------------------------------+\n"
+  end
+
+  def request_permission_type
+    "+----------------------------------------------------------------------------------+\n"+
+    "|Please type the permission level for the new employee. Type admin for an          |\n"+
+    "|administrator or employee for a non administrator.                                |\n"+
+    "+----------------------------------------------------------------------------------+\n"
+  end
+
+  def no_log
+    "+----------------------------------------------------------------------------------+\n"+
+    "|There are no log entries for this employee. Please log in hours to view a log     |\n"+
+    "|report.                                                                           |\n"+
+    "+----------------------------------------------------------------------------------+\n"
   end
 
 end
