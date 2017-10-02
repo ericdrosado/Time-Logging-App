@@ -3,7 +3,7 @@ require_relative '../lib/validator'
 
 describe 'EmployeePermissions' do
 
-  mock_path = File.expand_path('../../spec/mocks/mock_employee_log.csv', __FILE__)
+  mock_path = File.expand_path('../../spec/mocks/mock_admin_log.csv', __FILE__)
   date = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year}"
   hours = "9"
   type_of_work = "Billable Work"
@@ -16,9 +16,9 @@ describe 'EmployeePermissions' do
   timecode_report = "Total Billable Work Hours this month: 9\n"+
                      "Total Non-billable Work Hours this month: 0\n"+
                      "Total PTO Hours this month: 0"
-  client_report = "For American Medical Association you've worked 9 hours this month\n"+
-                  "For Next College Student Athlete you've worked 0 hours this month\n"+
-                  "For Yello you've worked 0 hours this month"
+  client_report = "For American Medical Association employee worked 9 hours\n"+
+                  "For Next College Student Athlete employee worked 0 hours\n"+
+                  "For Yello employee worked 0 hours"
   detailed_report = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year},9,Billable Work,American Medical Association"
 
   before do
@@ -145,7 +145,7 @@ describe 'EmployeePermissions' do
   describe '.prepare_client_report' do
     it 'will return a string for client report given hash data' do
       client_list_hash = {Yello:8}
-      expect(@employee_permissions.prepare_client_report(client_list_hash)).to eq "For Yello you've worked 8 hours this month"
+      expect(@employee_permissions.prepare_client_report(client_list_hash)).to eq "For Yello employee worked 8 hours"
     end
   end
 

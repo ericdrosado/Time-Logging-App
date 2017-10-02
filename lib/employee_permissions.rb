@@ -91,8 +91,7 @@ class EmployeePermissions
     client_list = get_client_list
     client_list_hash = {}
     client_list.each {|client| client_list_hash[client] = 0}
-    time_log_file = File.expand_path(path, __FILE__)
-    CSV.foreach(time_log_file) do |row|
+    CSV.foreach(path) do |row|
       month = get_month_from_data(row)
       if month === Date.today.month
         client_list.each do |client|
@@ -106,15 +105,14 @@ class EmployeePermissions
   def prepare_client_report client_list_hash
     client_reports = []
     client_list_hash.each do |key, value|
-      client_reports << "For #{key} you've worked #{value} hours this month"
+      client_reports << "For #{key} employee worked #{value} hours"
     end
     client_reports.join("\n")
   end
 
   def build_detailed_report path
     month_of_reports = []
-    time_log_file = File.expand_path(path, __FILE__)
-    CSV.foreach(time_log_file) do |row|
+    CSV.foreach(path) do |row|
       month = get_month_from_data(row)
       if month === Date.today.month
         month_of_reports << row.join(",")
