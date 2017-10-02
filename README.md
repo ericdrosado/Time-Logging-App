@@ -6,7 +6,8 @@
 
 ## To run:
 + In the root directory:
-```bundle exec ruby run_logger.rb
+```
+bundle exec ruby run_logger.rb
 ```
 
 ## Login Information
@@ -15,9 +16,12 @@
 
 ## To exit app entirely:
 + While in the application
-``` CTRL + z
+```
+CTRL + z
 ```
 
 ## To run tests:
 + In the root directory:
-```bundle exec rspec```
+```
+bundle exec rspec
+```
