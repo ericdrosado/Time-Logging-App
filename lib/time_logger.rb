@@ -90,7 +90,7 @@ class TimeLogger
       timecode_reports = report[1]
       client_reports = report[2]
       index = 0
-      while employee_names.length >= index
+      while employee_names[1].length > index
         @logger_view.print_parameter_view(employee_names[0], employee_names[1][index])
         @logger_view.print_parameter_view(timecode_reports[0], timecode_reports[1][index])
         @logger_view.print_parameter_view(client_reports[0], client_reports[1][index])
