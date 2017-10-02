@@ -84,7 +84,18 @@ class TimeLogger
       end
     when '5'
       report = @admin_permissions.get_employee_time_report
-      #print_report_view
+      @logger_view.clear_view()
+      @logger_view.print_view(options_view)
+      employee_names = report[0]
+      timecode_reports = report[1]
+      client_reports = report[2]
+      index = 0
+      while employee_names.length >= index
+        @logger_view.print_parameter_view(employee_names[0], employee_names[1][index])
+        @logger_view.print_parameter_view(timecode_reports[0], timecode_reports[1][index])
+        @logger_view.print_parameter_view(client_reports[0], client_reports[1][index])
+        index += 1
+      end
       admin_options(options_view)
     else
       invalid_entry(options_view, 'admin_options')
