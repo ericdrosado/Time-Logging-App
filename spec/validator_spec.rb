@@ -185,6 +185,11 @@ describe 'Validator' do
       client_names = ['American Medical Association', 'Yello']
       expect(@validator.valid_new_client_entry?(client, client_names)).to eq false
     end
+    it 'will return false if the new client name is blank' do
+      client = ''
+      client_names = ['American Medical Association', 'Yello']
+      expect(@validator.valid_new_client_entry?(client, client_names)).to eq false
+    end
   end
 
 end

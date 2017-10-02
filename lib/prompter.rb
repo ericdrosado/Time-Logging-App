@@ -57,7 +57,7 @@ class Prompter
 
   def client_exists
     "+----------------------------------------------------------------------------------+\n"+
-    "|Your new client entry already exists in the system.                               |\n"+
+    "|Your new client entry already exists in the system or you left the field blank.   |\n"+
     "+----------------------------------------------------------------------------------+\n"
   end
 
