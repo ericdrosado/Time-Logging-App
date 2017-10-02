@@ -162,15 +162,28 @@ describe 'Validator' do
   end
 
   describe '.not_a_used_name?' do
-    it 'will return true if the new employe name is not a name already in use' do
+    it 'will return true if the new employee name is not a name already in use' do
       name = 'John Rosado'
       employee_names = ['Eric Rosado', 'John Doe']
       expect(@validator.not_a_used_name?(name, employee_names)).to eq true
     end
-    it 'will return false if the new employe name is a name already in use' do
+    it 'will return false if the new employee name is a name already in use' do
       name = 'Eric Rosado'
       employee_names = ['Eric Rosado', 'John Doe']
       expect(@validator.not_a_used_name?(name, employee_names)).to eq false
+    end
+  end
+
+  describe '.valid_new_client_entry?' do
+    it 'will return true if the new client name is not a name already in use' do
+      client = 'Enova'
+      client_names = ['American Medical Association', 'Yello']
+      expect(@validator.valid_new_client_entry?(client, client_names)).to eq true
+    end
+    it 'will return false if the new client name is a name already in use' do
+      client = 'Yello'
+      client_names = ['American Medical Association', 'Yello']
+      expect(@validator.valid_new_client_entry?(client, client_names)).to eq false
     end
   end
 

@@ -24,7 +24,23 @@ class AdminPermissions < EmployeePermissions
     return employee_names
   end
 
-  def add_client
+  def add_client client_name
+    client_names = get_client_names
+    if @validator.valid_new_client_entry?(client_name, client_names)
+      CSV.open(CLIENT_LIST_FILE, "a+") do |csv|
+          csv << [client_name]
+      end
+    else
+      return "invalid"
+    end
+  end
+
+  def get_client_names
+    client_names = []
+    CSV.foreach(CLIENT_LIST_FILE) do |row|
+      client_names << row[0]
+    end
+    return client_names
   end
 
   def get_employee_time_report

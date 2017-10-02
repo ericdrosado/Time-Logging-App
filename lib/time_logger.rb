@@ -70,9 +70,18 @@ class TimeLogger
       entry_status = @admin_permissions.add_employee(employee_name, permission)
       evaluate_entry_status(entry_status, options_view, 'admin_options')
     when '4'
+      @logger_view.clear_view()
+      @logger_view.print_view(:add_client_view)
       client_name = @logger_view.get_input
-      @admin_permissions.add_client(client_name, permission)
-      admin_options(options_view)
+      entry_status = @admin_permissions.add_client(client_name)
+      if entry_status == 'invalid'
+        get_view_for_invalid_entry(:client_exists, options_view, 'admin_options')
+      else
+        @logger_view.clear_view()
+        @logger_view.get_prompt(:successful_operation)
+        @logger_view.print_view(options_view)
+        admin_options(options_view)
+      end
     when '5'
       report = @admin_permissions.get_employee_time_report
       #print_report_view

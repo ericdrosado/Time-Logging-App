@@ -4,6 +4,7 @@ require_relative '../lib/validator'
 describe 'AdminPermissions' do
 
   EMPLOYEE_PERMISSIONS_FILE = File.expand_path('../../data/employee_permissions.csv', __FILE__)
+  CLIENT_LIST_FILE = File.expand_path('../../data/client_list.csv', __FILE__)
 
   before do
     @validator = Validator.new
@@ -51,6 +52,34 @@ describe 'AdminPermissions' do
         employee_names << row[0]
       end
       expect(@admin_permissions.get_employee_names).to eq employee_names
+    end
+  end
+
+  describe '#add_client' do
+    it 'will add a new client to client_list.csv with valid client name' do
+      client_name = 'Enova'
+      client_list = ['American Medical Association', 'Yello']
+      allow(@admin_permissions).to receive(:get_client_names).and_return(client_list)
+      allow(@validator).to receive(:valid_new_client_entry?).with(client_name, client_list).and_return(true)
+      expect(CSV).to receive(:open).with(CLIENT_LIST_FILE, 'a+')
+      @admin_permissions.add_client(client_name)
+    end
+    it "will return 'invalid' given an invalid client_name" do
+      client_name = 'Enova'
+      client_list = ['American Medical Association', 'Yello']
+      allow(@admin_permissions).to receive(:get_client_names).and_return(client_list)
+      allow(@validator).to receive(:valid_new_client_entry?).with(client_name, client_list).and_return(false)
+      expect(@admin_permissions.add_client(client_name)).to eq 'invalid'
+    end
+  end
+
+  describe '.get_client_names' do
+    it 'will return an array of client names from client_list.csv' do
+      client_names = []
+      CSV.foreach(CLIENT_LIST_FILE) do |row|
+        client_names << row[0]
+      end
+      expect(@admin_permissions.get_client_names).to eq client_names
     end
   end
 

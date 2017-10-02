@@ -50,4 +50,11 @@ class Validator
     return true
   end
 
+  def valid_new_client_entry? client, client_names
+    client_names.each do |client_name|
+      return false if client_name == client
+    end
+    return true
+  end
+
 end
