@@ -8,7 +8,7 @@
 ## To run:
 + In the root directory:
 ```
-bundle exec ruby run_logger.rb
+ruby run_logger.rb
 ```
 
 ## Login Information
