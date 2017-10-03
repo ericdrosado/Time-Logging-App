@@ -8,14 +8,6 @@ require_relative '../lib/validator'
 
 describe 'TimeLogger' do
 
-  timecode_report = "Total Billable Work Hours this month: 9\n"+
-                     "Total Non-billable Work Hours this month: 0\n"+
-                     "Total PTO Hours this month: 0"
-  client_report = "For American Medical Association you've worked 9 hours this month\n"+
-                  "For Next College Student Athlete you've worked 0 hours this month\n"+
-                  "For Yello you've worked 0 hours this month"
-  detailed_report = "#{Date.today.day}/#{Date.today.month}/#{Date.today.year},9,Billable Work,American Medical Association"
-
   before do
     @mock_io_handler = MockIOHandler.new
     @prompter = Prompter.new
@@ -222,6 +214,72 @@ describe 'TimeLogger' do
       allow(@logger_view).to receive(:print_view).with(:options_view)
       expect(@time_logger).to receive(:send).and_return(:options_view)
       @time_logger.evaluate_entry_status(entry_status, options_view, options)
+    end
+  end
+
+  describe '.add_new_employee' do
+    it 'will add an employee to employee_permissions.csv' do
+      options_view = 'admin_options_view'
+      new_employee = 'Spec Doe'
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:print_view).with(:add_employee_view)
+      allow(@logger_view).to receive(:get_input).and_return(new_employee)
+      expect(@logger_view).to receive(:get_prompt).with(:request_permission_type)
+      allow(@logger_view).to receive(:get_input).and_return('employee')
+      allow(@admin_permissions).to receive(:add_employee).and_return(nil)
+      expect(@time_logger).to receive(:evaluate_entry_status).with(nil, options_view,'admin_options')
+      @time_logger.add_new_employee(options_view)
+    end
+  end
+
+  describe '.add_client' do
+    it 'will add a new client to client_list.csv' do
+      options_view = 'admin_options_view'
+      new_client = 'Foo'
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:print_view).with(:add_client_view)
+      allow(@logger_view).to receive(:get_input).and_return(new_client)
+      allow(@admin_permissions).to receive(:add_client).and_return('valid')
+      expect(@time_logger).to receive(:evaluate_entry_status).with('valid', options_view,'admin_options')
+      @time_logger.add_client(options_view)
+    end
+    it 'will not add a new client since client name already exists' do
+      options_view = 'admin_options_view'
+      new_client = 'Yello'
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:print_view).with(:add_client_view)
+      allow(@logger_view).to receive(:get_input).and_return(new_client)
+      allow(@admin_permissions).to receive(:add_client).and_return('invalid')
+      expect(@time_logger).to receive(:get_view_for_invalid_entry).with(:client_exists, options_view,'admin_options')
+      @time_logger.add_client(options_view)
+    end
+    it 'will not add a new client since client name is blank' do
+      options_view = 'admin_options_view'
+      new_client = ''
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:print_view).with(:add_client_view)
+      allow(@logger_view).to receive(:get_input).and_return(new_client)
+      allow(@admin_permissions).to receive(:add_client).and_return('invalid')
+      expect(@time_logger).to receive(:get_view_for_invalid_entry).with(:client_exists, options_view,'admin_options')
+      @time_logger.add_client(options_view)
+    end
+  end
+
+  describe '.get_employee_time_report' do
+    it 'will obtain all employee time reports' do
+      report = [[:employee_name_view, ['John Doe']],
+                [:employee_timecode_summary_report,["Total Billable Work Hours this month: 9\n"+"Total Non-billable Work Hours this month: 0\n"+"Total PTO Hours this month: 0"]],
+                [:employee_client_summary_report,["For American Medical Association you've worked 9 hours this month\n"+"For Next College Student Athlete you've worked 0 hours this month\n"+"For Yello you've worked 0 hours this month"]]]
+      options_view = 'admin_options_view'
+      employee_names = report[0]
+      timecode_reports = report[1]
+      client_reports = report[2]
+      allow(@admin_permissions).to receive(:get_employee_time_report).and_return(report)
+      allow(@logger_view).to receive(:clear_view)
+      expect(@logger_view).to receive(:print_view).with(options_view)
+      allow(@logger_view).to receive(:print_parameter_view)
+      expect(@time_logger).to receive(:admin_options).with(options_view)
+      @time_logger.get_employee_time_report(options_view)
     end
   end
 

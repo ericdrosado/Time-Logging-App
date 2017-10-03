@@ -62,41 +62,11 @@ class TimeLogger
     when '2'
       get_log_report(@admin_permissions, options_view, 'admin_options')
     when '3'
-      @logger_view.clear_view
-      @logger_view.print_view(:add_employee_view)
-      employee_name = @logger_view.get_input
-      @logger_view.get_prompt(:request_permission_type)
-      permission = @logger_view.get_input
-      entry_status = @admin_permissions.add_employee(employee_name, permission)
-      evaluate_entry_status(entry_status, options_view, 'admin_options')
+      add_new_employee(options_view)
     when '4'
-      @logger_view.clear_view()
-      @logger_view.print_view(:add_client_view)
-      client_name = @logger_view.get_input
-      entry_status = @admin_permissions.add_client(client_name)
-      if entry_status == 'invalid'
-        get_view_for_invalid_entry(:client_exists, options_view, 'admin_options')
-      else
-        @logger_view.clear_view()
-        @logger_view.get_prompt(:successful_operation)
-        @logger_view.print_view(options_view)
-        admin_options(options_view)
-      end
+      add_client(options_view)
     when '5'
-      report = @admin_permissions.get_employee_time_report
-      @logger_view.clear_view()
-      @logger_view.print_view(options_view)
-      employee_names = report[0]
-      timecode_reports = report[1]
-      client_reports = report[2]
-      index = 0
-      while employee_names[1].length > index
-        @logger_view.print_parameter_view(employee_names[0], employee_names[1][index])
-        @logger_view.print_parameter_view(timecode_reports[0], timecode_reports[1][index])
-        @logger_view.print_parameter_view(client_reports[0], client_reports[1][index])
-        index += 1
-      end
-      admin_options(options_view)
+      get_employee_time_report(options_view)
     else
       invalid_entry(options_view, 'admin_options')
     end
@@ -165,5 +135,41 @@ class TimeLogger
     @logger_view.get_prompt(prompt)
     @logger_view.print_view(options_view)
     send(options, options_view)
+  end
+
+  def add_new_employee options_view
+    @logger_view.clear_view
+    @logger_view.print_view(:add_employee_view)
+    employee_name = @logger_view.get_input
+    @logger_view.get_prompt(:request_permission_type)
+    permission = @logger_view.get_input
+    entry_status = @admin_permissions.add_employee(employee_name, permission)
+    evaluate_entry_status(entry_status, options_view, 'admin_options')
+  end
+
+  def add_client options_view
+    @logger_view.clear_view()
+    @logger_view.print_view(:add_client_view)
+    client_name = @logger_view.get_input
+    entry_status = @admin_permissions.add_client(client_name)
+    entry_status == 'invalid' ? get_view_for_invalid_entry(:client_exists, options_view, 'admin_options') :
+                                evaluate_entry_status('valid', options_view, 'admin_options')
+  end
+
+  def get_employee_time_report options_view
+    report = @admin_permissions.get_employee_time_report
+    @logger_view.clear_view()
+    @logger_view.print_view(options_view)
+    employee_names = report[0]
+    timecode_reports = report[1]
+    client_reports = report[2]
+    index = 0
+    while employee_names[1].length > index
+      @logger_view.print_parameter_view(employee_names[0], employee_names[1][index])
+      @logger_view.print_parameter_view(timecode_reports[0], timecode_reports[1][index])
+      @logger_view.print_parameter_view(client_reports[0], client_reports[1][index])
+      index += 1
+    end
+    admin_options(options_view)
   end
 end
