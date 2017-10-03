@@ -122,6 +122,7 @@ describe 'AdminPermissions' do
 
   describe '.build_summary_client_report' do
     it 'will return an array of client summary reports for employees' do
+      allow(@admin_permissions).to receive(:get_client_list).and_return(['American Medical Association','Next College Student Athlete','Yello'])
       expect(@admin_permissions.build_summary_client_report([mock_path])).to eq summary_client_report
     end
   end

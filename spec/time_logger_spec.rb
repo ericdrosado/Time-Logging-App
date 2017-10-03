@@ -103,6 +103,8 @@ describe 'TimeLogger' do
       client_list = ["American Medical Association", "Next College Student Athlete", "Yello"]
       entry_with_client = ['23/09/2017', '8', 'Billable Work', 'Yello']
       @time_logger.instance_variable_set(:@user_name, 'John Doe')
+      allow(@admin_permissions).to receive(:get_client_list).and_return(['American Medical Association','Next College Student Athlete','Yello'])
+      allow(@employee_permissions).to receive(:get_client_list).and_return(['American Medical Association','Next College Student Athlete','Yello'])
       allow(@time_logger).to receive(:choose_client).with(entry, client_list).and_return(['23/09/2017', '8', 'Billable Work', 'Yello'])
       allow(@employee_permissions).to receive(:enter_time).with(entry_with_client, 'John Doe', client_list).and_return('valid')
       expect(@time_logger.log_entry(entry, @employee_permissions)).to eq 'valid'

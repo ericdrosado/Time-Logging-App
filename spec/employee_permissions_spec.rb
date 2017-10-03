@@ -104,6 +104,7 @@ describe 'EmployeePermissions' do
 
   describe '.get_client_list' do
     it 'will return client list' do
+      allow(@employee_permissions).to receive(:get_client_list).and_return(['American Medical Association', 'Next College Student Athlete', 'Yello'])
       expect(@employee_permissions.get_client_list).to eq ['American Medical Association', 'Next College Student Athlete', 'Yello']
     end
   end
@@ -138,6 +139,7 @@ describe 'EmployeePermissions' do
 
   describe '.build_client_report' do
     it 'will return a string with a client report' do
+      allow(@employee_permissions).to receive(:get_client_list).and_return(['American Medical Association','Next College Student Athlete','Yello'])
       expect(@employee_permissions.build_client_report(mock_path)).to eq client_report
     end
   end
