@@ -1,4 +1,4 @@
-class Prompter
+class ViewPrompts
 
   def get_prompt prompt
     send(prompt)
@@ -8,7 +8,9 @@ class Prompter
 
   def request_name
     "+----------------------------------------------------------------+\n"+
-    "|Please enter your full name and press enter (ex. 'John Doe'):   |\n"+
+    "|Please enter your full name and press enter:                    |\n"+
+    "+----------------------------------------------------------------+\n"+
+    "|ex. 'John Doe'                                                  |\n"+
     "+----------------------------------------------------------------+\n"
   end
 
@@ -23,13 +25,15 @@ class Prompter
     "+----------------------------------------------------------------+\n"+
     "|Please enter the date, hours worked, and timecode in the correct|\n"+
     "|format as follows: day/month/year,hours worked,timecode         |\n"+
-    "|ex. 23/09/2017,8,Billable Work                                  |\n"+
     "+----------------------------------------------------------------+\n"+
     "|Timecodes: Billable Work, Non-billable Work, PTO                |\n"+
+    "+----------------------------------------------------------------+\n"+
+    "|ex. 23/09/2017,8,Billable Work                                  |\n"+
     "+----------------------------------------------------------------+\n"
   end
 
   def invalid_entry
+    "+----------------------------------------------------------------------------------+\n"+
     "|I'm sorry, that is an invalid entry. Ensure that your entry is typed correctly or |\n"+
     "|exactly as it appears. Please choose an option from the menu and try again.       |\n"+
     "+----------------------------------------------------------------------------------+\n"

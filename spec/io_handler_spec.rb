@@ -1,4 +1,4 @@
-require_relative '../lib/io_handler'
+require_relative '../lib/io_handler.rb'
 
 describe 'IOHandler' do
 

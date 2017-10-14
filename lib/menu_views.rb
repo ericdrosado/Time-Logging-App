@@ -1,30 +1,11 @@
-class LoggerView
+class MenuViews
 
-  def initialize io_handler, prompter
-    @io_handler = io_handler
-    @prompter = prompter
+  def get_view view
+    send(view)
   end
 
-  def get_prompt prompt
-    @io_handler.print(@prompter.get_prompt(prompt))
-  end
-
-  def print_view view
-    view = send(view)
-    @io_handler.print(view)
-  end
-
-  def print_parameter_view view, parameter
-    view = send(view, parameter)
-    @io_handler.print(view)
-  end
-
-  def get_input
-    @io_handler.get_input
-  end
-
-  def clear_view
-    system "clear"
+  def get_parameter_view view, parameter
+    send(view, parameter)
   end
 
   private
@@ -106,7 +87,7 @@ class LoggerView
     "+----------------------------------------------------------------------------------+\n"+
     "#{logs}\n"+
     "+----------------------------------------------------------------------------------+\n"+
-    "| Please select an option from the menu above to continue.                         |\n"+
+    "| Please select an option from the menu to continue.                               |\n"+
     "+----------------------------------------------------------------------------------+\n"
   end
 

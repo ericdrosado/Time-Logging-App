@@ -1,11 +1,13 @@
-require_relative '../lib/prompter'
+require_relative '../lib/view_prompts'
 
-describe 'Prompter' do
+describe 'ViewPrompts' do
 
-  before {@prompter = Prompter.new}
+  before {@view_prompts = ViewPrompts.new}
 
   request_name_prompt = "+----------------------------------------------------------------+\n"+
-                        "|Please enter your full name and press enter (ex. 'John Doe'):   |\n"+
+                        "|Please enter your full name and press enter:                    |\n"+
+                        "+----------------------------------------------------------------+\n"+
+                        "|ex. 'John Doe'                                                  |\n"+
                         "+----------------------------------------------------------------+\n"
   not_employee_prompt = "+----------------------------------------------------------------+\n"+
                         "|I'm sorry. This name is not in the system as an employee.       |\n"+
@@ -15,11 +17,11 @@ describe 'Prompter' do
   describe '#get_prompt' do
     it 'will get the request_name prompt' do
       prompt = :request_name
-      expect(@prompter.get_prompt(prompt)).to eq request_name_prompt
+      expect(@view_prompts.get_prompt(prompt)).to eq request_name_prompt
     end
     it 'will get the not_employee prompt' do
       prompt = :not_employee
-      expect(@prompter.get_prompt(prompt)).to eq not_employee_prompt
+      expect(@view_prompts.get_prompt(prompt)).to eq not_employee_prompt
     end
   end
 
