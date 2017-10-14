@@ -1,175 +1,114 @@
-require 'csv'
-
 class TimeLogger
 
-  attr_reader :user_name
-
-  def initialize admin_permissions, employee_permissions, logger_view
-    @admin_permissions = admin_permissions
-    @employee_permissions = employee_permissions
-    @logger_view = logger_view
+  def initialize data_manager, report_builder, view_manager
+    @data_manager = data_manager
+    @report_builder = report_builder
+    @view_manager = view_manager
   end
 
-  def start_logger
-    @logger_view.clear_view()
-    @logger_view.print_view(:welcome_view)
-    call_options_view
+  OPTIONS = {'0' => :run_logger, '1' => :log_time, '2' => :get_log_report, '3' => :add_new_employee, '4' => :add_client, '5' => :get_employee_time_report}
+  ALLOWED_PERMISSION = 'admin'
+
+  def run_logger name = ''
+    @view_manager.start_view
+    name = @view_manager.get_input
+    logged_in(name)
   end
 
-  def call_options_view
-    user_type = get_permission_level
-    options_view = user_type + '_options_view'
-    @logger_view.print_view(options_view)
-    send(user_type + '_options', options_view)
-  end
-
-  def get_permission_level
-    user_type = nil
-    while user_type == nil
-      get_user_name
-      user_type = @employee_permissions.evaluate_permissions(@user_name)
-      @logger_view.get_prompt(:not_employee) if user_type == nil
-    end
-    return user_type
-  end
-
-  def get_user_name
-    @logger_view.get_prompt(:request_name)
-    @user_name = @logger_view.get_input
-  end
-
-  def employee_options options_view
-    choice = @logger_view.get_input
-    case choice
-    when '0'
-      start_logger
-    when '1'
-      enter_time(@employee_permissions, options_view, 'employee_options')
-    when '2'
-      get_log_report(@employee_permissions, options_view, 'employee_options')
+  def logged_in name
+    @data_manager.log_in(name, self, @view_manager)
+    option = @view_manager.get_input
+    if OPTIONS.keys.include?(option)
+      send(OPTIONS[option], name)
     else
-      invalid_entry(options_view, 'employee_options')
+      evaluate_entry_status(:invalid, name)
     end
   end
 
-  def admin_options options_view
-    choice = @logger_view.get_input
-    case choice
-    when '0'
-      start_logger
-    when '1'
-      enter_time(@admin_permissions, options_view, 'admin_options')
-    when '2'
-      get_log_report(@admin_permissions, options_view, 'admin_options')
-    when '3'
-      add_new_employee(options_view)
-    when '4'
-      add_client(options_view)
-    when '5'
-      get_employee_time_report(options_view)
+  private
+
+  def log_time name
+    @view_manager.log_time_view
+    log = @view_manager.get_input
+    log == "" ? log_time : log = log.split(',')
+    entry_status = @data_manager.enter_time(log, name, @view_manager)
+    evaluate_entry_status(entry_status, name)
+  end
+
+  def get_log_report name
+    @view_manager.clear_view
+    log_data = @data_manager.get_individual_user_data(name)
+    client_list = @data_manager.get_client_list
+    report = @report_builder.build_user_report(client_list, log_data, name)
+    report == :invalid ? @view_manager.get_prompt(:no_log) : report.each {|report_type| @view_manager.get_parameter_view(report_type[0], report_type[1])}
+    evaluate_entry_status(report, name)
+  end
+
+  def add_new_employee name
+    @view_manager.clear_view
+    entry_status = evaluate_permissions(name)
+    if entry_status == ALLOWED_PERMISSION
+      @view_manager.get_view(:add_employee_view)
+      new_employee_name = @view_manager.get_input
+      @view_manager.get_prompt(:request_permission_type)
+      permission = @view_manager.get_input
+      entry_status = @data_manager.add_employee(new_employee_name, permission)
+    end
+    evaluate_entry_status(entry_status, name)
+  end
+
+  def add_client name
+    @view_manager.clear_view
+    entry_status = evaluate_permissions(name)
+    if entry_status == ALLOWED_PERMISSION
+      @view_manager.get_view(:add_client_view)
+      client_name = @view_manager.get_input
+      entry_status = @data_manager.add_client(client_name)
+    end
+    evaluate_entry_status(entry_status, name)
+  end
+
+  def get_employee_time_report name
+    @view_manager.clear_view
+    entry_status = evaluate_permissions(name)
+    if entry_status == ALLOWED_PERMISSION
+      client_list = @data_manager.get_client_list
+      employee_names = @data_manager.get_employee_names
+      log_data = @data_manager.get_employee_data
+      report = @report_builder.build_employee_time_report(client_list, log_data, employee_names)
+      @view_manager.clear_view()
+      @view_manager.get_view(:employee_summary_report)
+      employee_names = report[0]
+      timecode_reports = report[1]
+      client_reports = report[2]
+      index = 0
+      while employee_names[1].length > index
+        @view_manager.get_parameter_view(employee_names[0], employee_names[1][index])
+        @view_manager.get_parameter_view(timecode_reports[0], timecode_reports[1][index])
+        @view_manager.get_parameter_view(client_reports[0], client_reports[1][index])
+        index += 1
+      end
+    end
+    evaluate_entry_status(entry_status, name)
+  end
+
+  def evaluate_entry_status entry_status, name
+    if entry_status == :invalid
+      @view_manager.get_prompt(:invalid_entry)
+      logged_in(name)
     else
-      invalid_entry(options_view, 'admin_options')
+      @view_manager.get_prompt(:successful_operation)
+      logged_in(name)
     end
   end
 
-  def enter_time permissions, options_view, options
-    entry = get_log_entry
-    entry_status = log_entry(entry, permissions)
-    evaluate_entry_status(entry_status, options_view, options)
-  end
-
-  def get_log_entry
-    @logger_view.clear_view()
-    @logger_view.print_view(:time_entry_view)
-    @logger_view.get_prompt(:request_time_entry)
-    entry = @logger_view.get_input
-    entry == "" ? get_log_entry : entry = entry.split(',')
-  end
-
-  def log_entry entry, permission
-    if entry[2] == 'Billable Work'
-      client_list = permission.get_client_list
-      entry_with_client = choose_client(entry, client_list)
-      entry_status = permission.enter_time(entry_with_client, @user_name, client_list)
+  def evaluate_permissions name
+    permission = @data_manager.get_user_permissions(name)
+    if permission == ALLOWED_PERMISSION
+      permission
     else
-      entry_status = permission.enter_time(entry, @user_name)
+      :invalid
     end
   end
 
-  def choose_client entry, client_list
-    @logger_view.print_view(:client_view)
-    client_list.each {|client| @logger_view.print_parameter_view(:client_list_view, client)}
-    entry << @logger_view.get_input
-  end
-
-  def invalid_entry options_view, options
-    entry_status = 'invalid'
-    evaluate_entry_status(entry_status, options_view, options)
-  end
-
-  def evaluate_entry_status entry_status, options_view, options
-    if entry_status == 'invalid'
-      get_view_for_invalid_entry(:invalid_entry, options_view, options)
-    else
-      @logger_view.clear_view()
-      @logger_view.get_prompt(:successful_operation)
-      @logger_view.print_view(options_view)
-      send(options, options_view)
-    end
-  end
-
-  def get_log_report permissions, options_view, options
-    report = permissions.get_time_report(@user_name)
-    if report == 'invalid'
-      get_view_for_invalid_entry(:no_log, options_view, options)
-    else
-      @logger_view.clear_view()
-      @logger_view.print_view(options_view)
-      report.each {|report_type| @logger_view.print_parameter_view(report_type[0], report_type[1])}
-      send(options, options_view)
-    end
-  end
-
-  def get_view_for_invalid_entry prompt, options_view, options
-    @logger_view.clear_view()
-    @logger_view.get_prompt(prompt)
-    @logger_view.print_view(options_view)
-    send(options, options_view)
-  end
-
-  def add_new_employee options_view
-    @logger_view.clear_view
-    @logger_view.print_view(:add_employee_view)
-    employee_name = @logger_view.get_input
-    @logger_view.get_prompt(:request_permission_type)
-    permission = @logger_view.get_input
-    entry_status = @admin_permissions.add_employee(employee_name, permission)
-    evaluate_entry_status(entry_status, options_view, 'admin_options')
-  end
-
-  def add_client options_view
-    @logger_view.clear_view()
-    @logger_view.print_view(:add_client_view)
-    client_name = @logger_view.get_input
-    entry_status = @admin_permissions.add_client(client_name)
-    entry_status == 'invalid' ? get_view_for_invalid_entry(:client_exists, options_view, 'admin_options') :
-                                evaluate_entry_status('valid', options_view, 'admin_options')
-  end
-
-  def get_employee_time_report options_view
-    report = @admin_permissions.get_employee_time_report
-    @logger_view.clear_view()
-    @logger_view.print_view(options_view)
-    employee_names = report[0]
-    timecode_reports = report[1]
-    client_reports = report[2]
-    index = 0
-    while employee_names[1].length > index
-      @logger_view.print_parameter_view(employee_names[0], employee_names[1][index])
-      @logger_view.print_parameter_view(timecode_reports[0], timecode_reports[1][index])
-      @logger_view.print_parameter_view(client_reports[0], client_reports[1][index])
-      index += 1
-    end
-    admin_options(options_view)
-  end
 end
